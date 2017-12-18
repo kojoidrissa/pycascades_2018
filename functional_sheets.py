@@ -4,19 +4,25 @@
 from openpyxl.workbook import Workbook
 from openpyxl import load_workbook
 import time
+from pprint import pprint
 
 start = time.time() #timer, until I learn to use http://docs.python.org/2/library/profile.html
 wb = load_workbook('headcount_summary.xlsx')
 source = wb.get_sheet_by_name('monthly_headcount_summary')
 
+
 #creating the header row
 header =[] 
-for c in source.rows[0]:
+for c in next(source.rows): # In Py3, this is a generator object. I had to use the next() function on it.
     header.append(c.value)
 #I STILL don't know why those 0s got added to the header; need to figure that out
 #Probably because the source data had ONE 'DOE/Project' column, not two separate cols
-header[-2:] = 'DOE', 'Project'
-header.extend(['Tot. Hours', 'DOE Util %', 'Proj. Util %']) 
+
+# Commented this out for PyCascades 2018
+# header[-2:] = 'DOE', 'Project'
+
+header.extend(['Tot. Hours', 'DOE Util %', 'Proj. Util %'])
+print(header)
 
 
 
@@ -57,22 +63,31 @@ time1 = time.time()
 ##in the first and last row. Until I figure out how to STOP that, I'm slicing off those rows.
 ##Truth be told, I don't NEED them. Well, I MIGHT need the first row for header names. To make the
 ##design less fragile
-for row in source.rows[1:-1]: #trying to work around problem with 1st and last rows; was 'for row in source.rows'
-    ri = source.rows.index(row)
+
+# 2017-12-18
+# using next on the generator object. Not sure if I'll need to cut off the last row
+for index, row in enumerate(source.rows): # trying to work around problem with 1st and last rows; was 'for row in source.rows'
+    ri = index
     temprow = []
     for cell in row:
-        ci = source.rows[ri].index(cell)
+        ci = row.index(cell)
         #print source.rows[ri][ci].value
-        temprow.append(source.rows[ri][ci].value)
+        temprow.append(cell.value)
         #print temprow #only for debugging purposes; I want to see when/where the float division by zero problem is happening
         #It seems to be in the "hdcntsum.xlsx" header row, where the DOE & Project columns have '0' in them.
         #I'm taking a slice of source.rows to ignore that first row for now
-    temprow.append(temprow[-1]+temprow[-2]) #Total Hours: sum of DOE & Proj Hours
-    temprow.append(temprow[-3]/float(temprow[-1])) #DOE Util%; DOE Hours / newly added Total
-    temprow.append(temprow[-3]/float(temprow[-2])) #Proj Util%; Proj. Hours / Total
     fullTable.append(temprow)
+
+# STOPPED 2017-12-18T16:07:04-06:00
+# Convert FULLTABLE to have new, computed values
+print("FULLTABLE HAS A LENGTH", len(fullTable))
+pprint(fullTable, indent = 2)
+temprow.append(temprow[-1]+temprow[-2]) #Total Hours: sum of DOE & Proj Hours
+temprow.append(temprow[-3]/float(temprow[-1])) #DOE Util%; DOE Hours / newly added Total
+temprow.append(temprow[-3]/float(temprow[-2])) #Proj Util%; Proj. Hours / Total
+fullTable.append(temprow)
 time2 = time.time()
-print "fullTable Creation Time was ", time2-time1, "seconds."
+print ("fullTable Creation Time was ", time2-time1, "seconds.")
 
 #This function takes in the list of cost centers in Subsea, returns a list of lists; 
 #each internal list is a row for Subsea. It also excludes any rows that aren't
@@ -215,7 +230,7 @@ for key in dept_dict.keys():
         sheet_dict.update({key : makeSubseaTable(dept_dict[key])})
 
 time2 = time.time()
-print "Creation Time  for all Functional Tables was ", time2-time1, "seconds."
+print ("Creation Time  for all Functional Tables was ", time2-time1, "seconds.")
 
 ##Function 2: create_tabs
 time1 = time.time()
@@ -225,7 +240,7 @@ create_tabs(fullTable, 'Headcount Summary Sorted')
 time2 = time.time()
 
 #print "Length of all tables is", len(subsTable + estSTable + prjCTable + infoTable + procTable + legaTable + engiTable + humaTable + prjMTable + accoTable + ethiTable + hsesTable + qualTable)
-print "Creation Time for ALL tabs was ", time2-time1, "seconds."
+print ("Creation Time for ALL tabs was ", time2-time1, "seconds.")
 
 #remove 'Sheet' worksheet, that gets created by default
 target.remove_sheet(target.get_sheet_by_name("Sheet")) #the .remove_sheet() function seems to REQUIRE a worksheet object, not just a name
@@ -240,7 +255,7 @@ format.bold_headers_footers(target)
 
 end = time.time()
 dur = end - start
-print "Total processing time", dur
+print ("Total processing time", dur)
 
 def funcSheets_check_figures(d, ft):
     '''
@@ -253,20 +268,20 @@ def funcSheets_check_figures(d, ft):
 
     '''
 
-    print "############################################"
-    print "CHECK FIGURES"
-    print "############################################"
+    print ("############################################")
+    print ("CHECK FIGURES")
+    print ("############################################")
 
     for key in d.keys():
-        print key, "has", len(d[key]), "employees."
+        print (key, "has", len(d[key]), "employees.")
 
     check_sum = 0
     for key in d.keys():
         check_sum = check_sum + len(d[key])
-    print "********************************************"
-    print "Combined, the Functional Sheets have a total of", check_sum, "employees."
-    print "This is compared to", len(ft), "employees in Headcount Summary Sorted."
-    print "This means", len(ft) - check_sum, "employees from Headcount Summary aren't included in the functional sheets." 
+    print ("********************************************")
+    print ("Combined, the Functional Sheets have a total of", check_sum, "employees.")
+    print ("This is compared to", len(ft), "employees in Headcount Summary Sorted.")
+    print ("This means", len(ft) - check_sum, "employees from Headcount Summary aren't included in the functional sheets.")
     #I should include an IF here to change the sentence based on the difference direction
 
     ###This is where the Exceptions sheet gets created
@@ -292,7 +307,7 @@ def funcSheets_check_figures(d, ft):
 
     ##Find the Exceptions as a difference between the sets
     exceptions = set.difference(hss_set, func_set)
-    print exceptions
+    print (exceptions)
     len(exceptions)
 
     ##create a dictionary of {employeeNum:[utilization data]}, to write to spreadsheet
@@ -316,4 +331,4 @@ problems = funcSheets_check_figures(sheet_dict, fullTable)
 
 target.save(dest_filename)
 
-print "There are", len(problems), "exceptions."
+print ("There are", len(problems), "exceptions.")
