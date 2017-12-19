@@ -18,22 +18,15 @@ for c in next(source.rows): # In Py3, this is a generator object. I had to use t
     header.append(c.value)
 
 header.extend(['Tot. Hours', 'DOE Util %', 'Proj. Util %'])
-print("NEW HEADER IS \n{}".format(header))
 
-
-##This function is intended to create a table of the ENTIRE contents of the headcount summary file
+## This "function" is intended to create a table of the ENTIRE contents of the headcount summary file
+## This is 'fullTable' construct is used to create the 'Headcount Summary Sorted' sheet in the final workbook 
 fullTable = []
 time1 = time.time()
 
-##The 'Monthly Headcount Summary' tab in 'hdcntsum.xlsx' has 0 in columns F&G (index[5]&[6] in Python) 
-##in the first and last row. Until I figure out how to STOP that, I'm slicing off those rows.
-##Truth be told, I don't NEED them. Well, I MIGHT need the first row for header names. To make the
-##design less fragile
 
-# 2017-12-18
 # using next on the generator object. Not sure if I'll need to cut off the last row
-for index, row in enumerate(source.rows): # trying to work around problem with 1st and last rows; was 'for row in source.rows'
-    ri = index
+for index, row in enumerate(source.rows):
     temprow = []
     for cell in row:
         ci = row.index(cell)
@@ -55,7 +48,7 @@ fullTable.append(temprow)
 time2 = time.time()
 print ("fullTable Creation Time was ", time2-time1, "seconds.")
 
-def makeNoSubseaTable(list):
+def functionTable(list):
     
     ''' 
     list ==> list of lists
@@ -92,7 +85,7 @@ def create_tabs(functable, tabname):
     '''
     list of lists, string --> list of lists
     
-    Takes in nested list for each functional area (created by funcTable/makeSubseaTable/makeNoSubseaTable) and a string (tabname)
+    Takes in nested list for each functional area (created by functionTable) and a string (tabname)
     each inner list reperesents a row of data; creates a spreadsheet in memory, writes those rows to the spreadsheet
     The string becomes the name of the worksheet
     '''
@@ -164,14 +157,14 @@ def create_tabs(functable, tabname):
 
 #My "Main Loop"; running the data through the two functions
 
-##Function 1: functionTable ==> makeSubSeaTable/makeNoSubseaTable
+##Function 1: functionTable
 time1 = time.time()
 with open('costCenter_Function_map.json', 'r') as json_map:
     dept_dict = json.load(json_map)
 
 sheet_dict = {}
 for key in dept_dict.keys():
-    sheet_dict.update({key : makeNoSubseaTable(dept_dict[key])})
+    sheet_dict.update({key : functionTable(dept_dict[key])})
 
 time2 = time.time()
 print ("Creation Time  for all Functional Tables was ", time2-time1, "seconds.")
