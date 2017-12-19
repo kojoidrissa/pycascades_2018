@@ -175,8 +175,8 @@ def create_tabs(functable, tabname):
     ###Since I named my module AND function the same thing (I hadn't planned on it being a module)
     ###I ended up with moduleName.moduleName() 
 
-    import costCenterFooter
-    footer = costCenterFooter.costCenterFooter(functable)
+    # import costCenterFooter
+    # footer = costCenterFooter.costCenterFooter(functable)
 
     for r in headcount_sorted:
         ri = headcount_sorted.index(r)
@@ -190,17 +190,17 @@ def create_tabs(functable, tabname):
         #If this Cost Center is different than the prior row, it's a new Cost Center
         #insert footer (for the previous Cost Center), one spacer, then write the header and append the row
         else:
-            ws.append(footer[str(headcount_sorted[ri-1][1])]) #footer for the previous Cost Center
+            # ws.append(footer[str(headcount_sorted[ri-1][1])]) #footer for the previous Cost Center
             ws.append(spacer) #spacer for readability
             ws.append(header)
             ws.append(r)
-    ws.append(footer[str(headcount_sorted[ri][1])]) #footer for the FINAL Cost Center
+    # ws.append(footer[str(headcount_sorted[ri][1])]) #footer for the FINAL Cost Center
     
     #Once all the Cost Centers are done, add in the grand totals for the Functional Area
-    import deptTotal
-    DeptTotals = deptTotal.deptTotal(footer, tabname)
-    ws.append(spacer) #spacer for readability
-    ws.append(DeptTotals[tabname]) #Functional Area Totals & Utilization
+    # import deptTotal
+    # DeptTotals = deptTotal.deptTotal(footer, tabname)
+    # ws.append(spacer) #spacer for readability
+    # ws.append(DeptTotals[tabname]) #Functional Area Totals & Utilization
                 
 
 #My "Main Loop"; running the data through the two functions
@@ -232,8 +232,8 @@ print ("Creation Time for ALL tabs was ", time2-time1, "seconds.")
 target.remove_sheet(target.get_sheet_by_name("Sheet")) #the .remove_sheet() function seems to REQUIRE a worksheet object, not just a name
 
 #Make headers bold; format will probably be the later home of functions for number & alignment formatting
-import format
-format.bold_headers_footers(target)
+# import format
+# format.bold_headers_footers(target)
 
 ##Writing that worksheet to a file
 ##Moved later in file, so Exceptions sheet could be written
