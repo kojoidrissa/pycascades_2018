@@ -26,18 +26,25 @@ def costCenterFooter(functable):
     #needing it to be blank, but have room to add 5 elements to the end of it
     #   sumDoe, sumProj, totHours, (sumDoe/totHours), & (sumProj/totHours)
     ftrBuffr = len(functable[0]) - 5
+    # print("LEN(FUNCTABLE[0]) #2 IS {}".format(len(functable[0])))
     for cc in ccUnique:
         ccDict = {str(cc): [None for i in range(ftrBuffr)]} #list comprehension here
         sumDoe = 0
         sumProj = 0
         for row in functable:
-            if row[1] == cc:
+            # print("LEN(ROW) IS {}".format(len(row)))
+            if row[1] == cc and len(row) == 10:
+                # print("CC IS {}".format(cc))
+                # print("ROW IS {}".format(row))
+                # print("ROW[-5] is {}".format(row[-5]))
                 sumDoe = sumDoe + row[-5]
                 sumProj = sumProj + row[-4]
         #StackOverflow helped with code below: http://stackoverflow.com/a/3419217;
         #In a later refactor, I should see if the .update method would work here too
-        ccDict[str(cc)].extend([sumDoe, sumProj])
-        totHours = float(sumDoe + sumProj)
-        ccDict[str(cc)].extend([totHours, (sumDoe/totHours), (sumProj/totHours)])    
-        footer.update(ccDict) #using the .update method as per http://stackoverflow.com/a/1165836
+        if sumDoe + sumProj != 0:
+            ccDict[str(cc)].extend([sumDoe, sumProj])
+            totHours = float(sumDoe + sumProj)
+            # print("TOTHOURS IS {}".format(totHours))
+            ccDict[str(cc)].extend([totHours, (sumDoe/totHours), (sumProj/totHours)])    
+            footer.update(ccDict) #using the .update method as per http://stackoverflow.com/a/1165836
     return footer

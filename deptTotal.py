@@ -10,13 +10,13 @@ def deptTotal(footer, tabname):
         deptTotal = {'tabname': [None * 6, DOETotal, ProjTotal, TotHours, DOEUtil, ProjUtil]}
 
     '''
-    deptBuffr = len(footer.values()[0]) - 5
+    deptBuffr = len(list(footer.values())[0]) - 5
     deptotal = {tabname: [None for i in range(deptBuffr)]} #creates the empty spaces in the dictionary
 
     dt_doe = 0
     dt_prj = 0
 
-    for v in footer.itervalues():
+    for v in iter(footer.values()):
         dt_doe = dt_doe + v[-5] #as currently configured, DOETotal is the -5th element in the footer
         dt_prj = dt_prj + v[-4] #as currently configured, ProjTotal is the -4th element in the footer
 

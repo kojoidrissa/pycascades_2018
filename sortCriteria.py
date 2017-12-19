@@ -7,7 +7,7 @@ def sort_criteria(header_row):
     '''
 
     sort_list = []
-    criteria = ('CC', 'Company', 'Employee Name') #the terms we're looking for to find our sorting indexes
+    criteria = ('division', 'cc', 'employee_name') #the terms we're looking for to find our sorting indexes
 
     for c in criteria:
         for i in header_row:

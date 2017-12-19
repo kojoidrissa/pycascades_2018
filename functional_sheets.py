@@ -1,10 +1,11 @@
 #!python
 
 ##This will take the output of "headcount.py" and create the various functional spreadsheet summaries
-from openpyxl.workbook import Workbook
-from openpyxl import load_workbook
+import json
 import time
 from pprint import pprint
+from openpyxl import load_workbook
+from openpyxl.workbook import Workbook
 
 start = time.time() #timer, until I learn to use http://docs.python.org/2/library/profile.html
 wb = load_workbook('headcount_summary.xlsx')
@@ -80,8 +81,11 @@ for index, row in enumerate(source.rows): # trying to work around problem with 1
 
 # STOPPED 2017-12-18T16:07:04-06:00
 # Convert FULLTABLE to have new, computed values
-print("FULLTABLE HAS A LENGTH", len(fullTable))
-pprint(fullTable, indent = 2)
+
+## prints to see the data structure and make sure it's the right size
+# print("FULLTABLE HAS A LENGTH", len(fullTable))
+# pprint(fullTable, indent = 4)
+
 temprow.append(temprow[-1]+temprow[-2]) #Total Hours: sum of DOE & Proj Hours
 temprow.append(temprow[-3]/float(temprow[-1])) #DOE Util%; DOE Hours / newly added Total
 temprow.append(temprow[-3]/float(temprow[-2])) #Proj Util%; Proj. Hours / Total
@@ -89,32 +93,6 @@ fullTable.append(temprow)
 time2 = time.time()
 print ("fullTable Creation Time was ", time2-time1, "seconds.")
 
-#This function takes in the list of cost centers in Subsea, returns a list of lists; 
-#each internal list is a row for Subsea. It also excludes any rows that aren't
-#Subsea (Company 2231)
-def makeSubseaTable(list):
-    
-    ''' 
-    list ==> list of lists
-    
-    Input a list of cost centers for a functional tab;
-    return a list of lists where each inner list is a row of representing one person in that Cost Center
-    '''
-
-    tempTable = []
-    for row in source.rows:
-        ri = source.rows.index(row)
-        if row[0].value == 2231: #this is what was missing. I need to test the VALUE of what's in that cell
-            if str(row[1].value) in list: #row[1] is the position of the Cost Center; I should change that to get the index of the name
-                temprow = []
-                for cell in row:
-                    ci = source.rows[ri].index(cell)
-                    temprow.append(source.rows[ri][ci].value)
-                temprow.append(temprow[-1]+temprow[-2]) #Total Hours: sum of DOE & Proj Hours
-                temprow.append(temprow[-3]/float(temprow[-1])) #DOE Util%; DOE Hours / newly added Total
-                temprow.append(temprow[-3]/float(temprow[-2])) #Proj Util%; Proj. Hours / Total
-                tempTable.append(temprow)
-    return tempTable
 
 #This function takes in the list of cost centers from the various functional areas, returns a list of lists; 
 #each internal list is a row in the table for that area. It also excludes any rows that ARE
@@ -129,18 +107,21 @@ def makeNoSubseaTable(list):
     '''
 
     tempTable = []
-    for row in source.rows:
-        ri = source.rows.index(row)
-        if row[0].value != 2231: #this is what was missing. I need to test the VALUE of what's in that cell
-            if str(row[1].value) in list: #row[1] is the position of the Cost Center; I should change that to get the index of the name
-                temprow = []
-                for cell in row:
-                    ci = source.rows[ri].index(cell)
-                    temprow.append(source.rows[ri][ci].value)
-                temprow.append(temprow[-1]+temprow[-2]) #Total Hours: sum of DOE & Proj Hours
-                temprow.append(temprow[-3]/float(temprow[-1])) #DOE Util%; DOE Hours / newly added Total
-                temprow.append(temprow[-3]/float(temprow[-2])) #Proj Util%; Proj. Hours / Total
-                tempTable.append(temprow)
+    for index, row in enumerate(source.rows):
+        # print("ROW IS OF TYPE \n{} AND CONTAINS \n{}".format(type(row), row))
+        # for cell in row:
+            # print (cell.value)
+        ri = index
+        if str(row[1].value) in list: #row[1] is the position of the Cost Center; I should change that to get the index of the name
+            temprow = []
+            for cell in row:
+                ci = row.index(cell)
+                # print ("row {}, cell {} has the value of {}".format(ri, ci, row[ci].value))
+                temprow.append(row[ci].value)
+            temprow.append(temprow[-1]+temprow[-2]) #Total Hours: sum of DOE & Proj Hours
+            temprow.append(temprow[-3]/float(temprow[-1])) #DOE Util%; DOE Hours / newly added Total
+            temprow.append(temprow[-3]/float(temprow[-2])) #Proj Util%; Proj. Hours / Total
+            tempTable.append(temprow)
     return tempTable
     
     
@@ -169,17 +150,23 @@ def create_tabs(functable, tabname):
     ##I upgraded to using the Operator Module, as it lets me sort by MULTIPLE criteria; 
     ##http://docs.python.org/2/howto/sorting.html#operator-module-functions
     from operator import itemgetter
-    ##using Operator module, sorting by Cost Center, then Company, then Emp. Name
+    ##using Operator module, sorting by Division, Cost Center, then Emp. Name
     
     import sortCriteria #generates itemgetter keys based on the header values, instead of hardcoding them
-    sort_by = sortCriteria.sort_criteria(source.rows[0]) 
+    # print("\nTHE FIRST ROW IN THE SPREADSHEET IS \n{}".format(next(source.rows)))
+    sort_by = sortCriteria.sort_criteria(next(source.rows)) 
     headcount_sorted = sorted(functable, key = itemgetter(sort_by[0], sort_by[1], sort_by[2]))
     
     #goes through the sorted nested list, writing it to the spreadsheet in memory
     #Updated version uses the APPEND method from http://pythonhosted.org/openpyxl/api.html#module-openpyxl-worksheet-worksheet
     
     #spacer added to create break for manual insertion of Cost Center sum functions
-    spacer = [None for i in range(len(functable[0]))] #used range in a list comprehension to build this
+    pprint(type(functable))
+    pprint(functable[0], indent=2)
+    print("LEN(FUNCTABLE[0]) IS {}".format(len(functable[0])))
+    spacer = [None for i in range(len(functable[0]))]
+
+    #used range in a list comprehension to build this
 
     #bring in my custom Footer code and generate the Footer dictionary for this Functional area
     ##since I didn't adjust the Path variable (I'll do that later), costCenterFooter.py had to
@@ -220,14 +207,12 @@ def create_tabs(functable, tabname):
 
 ##Function 1: functionTable ==> makeSubSeaTable/makeNoSubseaTable
 time1 = time.time()
-import json
-dept_dict = json.load(file('costCenter_Function_map.json'))
+with open('costCenter_Function_map.json', 'r') as json_map:
+    dept_dict = json.load(json_map)
+
 sheet_dict = {}
 for key in dept_dict.keys():
-    if key != 'Subsea':
-        sheet_dict.update({key : makeNoSubseaTable(dept_dict[key])})
-    else:
-        sheet_dict.update({key : makeSubseaTable(dept_dict[key])})
+    sheet_dict.update({key : makeNoSubseaTable(dept_dict[key])})
 
 time2 = time.time()
 print ("Creation Time  for all Functional Tables was ", time2-time1, "seconds.")
@@ -235,6 +220,7 @@ print ("Creation Time  for all Functional Tables was ", time2-time1, "seconds.")
 ##Function 2: create_tabs
 time1 = time.time()
 for key in sorted(sheet_dict.keys(), reverse = True):
+    print("SHEET_DICT[KEY] \n{}, KEY \n{}".format(sheet_dict[key], key))
     create_tabs(sheet_dict[key], key)
 create_tabs(fullTable, 'Headcount Summary Sorted')
 time2 = time.time()
