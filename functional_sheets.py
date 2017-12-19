@@ -16,14 +16,9 @@ source = wb.get_sheet_by_name('monthly_headcount_summary')
 header =[] 
 for c in next(source.rows): # In Py3, this is a generator object. I had to use the next() function on it.
     header.append(c.value)
-#I STILL don't know why those 0s got added to the header; need to figure that out
-#Probably because the source data had ONE 'DOE/Project' column, not two separate cols
-
-# Commented this out for PyCascades 2018
-# header[-2:] = 'DOE', 'Project'
 
 header.extend(['Tot. Hours', 'DOE Util %', 'Proj. Util %'])
-print(header)
+print("NEW HEADER IS \n{}".format(header))
 
 
 
@@ -78,9 +73,6 @@ for index, row in enumerate(source.rows): # trying to work around problem with 1
         #It seems to be in the "hdcntsum.xlsx" header row, where the DOE & Project columns have '0' in them.
         #I'm taking a slice of source.rows to ignore that first row for now
     fullTable.append(temprow)
-
-# STOPPED 2017-12-18T16:07:04-06:00
-# Convert FULLTABLE to have new, computed values
 
 ## prints to see the data structure and make sure it's the right size
 # print("FULLTABLE HAS A LENGTH", len(fullTable))
@@ -139,9 +131,8 @@ def create_tabs(functable, tabname):
     The string becomes the name of the worksheet
     '''
     #creating & naming the spreadsheet in memory
-    ws = target.create_sheet(0)
-    ws.title = tabname
-    #ws.append(header) THIS was a mistake.
+    ws = target.create_sheet(tabname, 0)
+    # ws.title = tabname THIS WAS THE OLDER METHOD
     
     #sorted_by_second sorts the incoming data by the 2nd element in each list; the Cost Center in this case
     #thanks StackOverflow! http://stackoverflow.com/questions/3121979/how-to-sort-list-tuple-of-lists-tuples
@@ -159,14 +150,16 @@ def create_tabs(functable, tabname):
     
     #goes through the sorted nested list, writing it to the spreadsheet in memory
     #Updated version uses the APPEND method from http://pythonhosted.org/openpyxl/api.html#module-openpyxl-worksheet-worksheet
+
+    ## Debugging prints to figure out why the spacer wasn't working
+    # pprint(type(functable))
+    # pprint(functable[0], indent=2)
+    # print("LEN(FUNCTABLE[0]) IS {}".format(len(functable[0])))
     
-    #spacer added to create break for manual insertion of Cost Center sum functions
-    pprint(type(functable))
-    pprint(functable[0], indent=2)
-    print("LEN(FUNCTABLE[0]) IS {}".format(len(functable[0])))
+    # spacer added to create break for manual insertion of Cost Center sum functions
+    # used range in a list comprehension to build this
     spacer = [None for i in range(len(functable[0]))]
 
-    #used range in a list comprehension to build this
 
     #bring in my custom Footer code and generate the Footer dictionary for this Functional area
     ##since I didn't adjust the Path variable (I'll do that later), costCenterFooter.py had to
@@ -220,7 +213,7 @@ print ("Creation Time  for all Functional Tables was ", time2-time1, "seconds.")
 ##Function 2: create_tabs
 time1 = time.time()
 for key in sorted(sheet_dict.keys(), reverse = True):
-    print("SHEET_DICT[KEY] \n{}, KEY \n{}".format(sheet_dict[key], key))
+    # print("SHEET_DICT[KEY] \n{}, KEY \n{}".format(sheet_dict[key], key))
     create_tabs(sheet_dict[key], key)
 create_tabs(fullTable, 'Headcount Summary Sorted')
 time2 = time.time()
@@ -303,8 +296,8 @@ def funcSheets_check_figures(d, ft):
             if i[3] == x:
                 exception_dict.update({x : i})
 
-    ws = target.create_sheet(0)
-    ws.title = "Exceptions"
+    ws = target.create_sheet("Exceptions", 0)
+    # ws.title = "Exceptions"
 
     for key in exception_dict:
         ws.append(exception_dict[key])
