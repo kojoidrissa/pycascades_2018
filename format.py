@@ -17,7 +17,7 @@ def bold_headers_footers(target):
             if row[0].value == 'Company': #Header test 
                 for cell in row:
                     cell.style.font.bold = True
-                    elif type(row[0].value) == unicode and type(row[5].value) != unicode: #Footer test
+            elif type(row[0].value) == unicode and type(row[5].value) != unicode: #Footer test
                     #this code depends on the cell types BEFORE the worksheet is written/saved
                     #as such, it needs to run BEFORE the save. I'll need to get a better handle on
                     #the various datatypes; I also need to rexamine my method here. There should be
@@ -41,7 +41,7 @@ def what_is_bold(target):
             for cell in row:
                 ci = row.index(cell)
                 if cell.style.font.bold:
-                    print "Sheet", sheet, "Row", ri, "Cell", ci, ", also known as Cell", cell.address, "is", cell.value, "and it's BOLD."
+                    print ("Sheet", sheet, "Row", ri, "Cell", ci, ", also known as Cell", cell.address, "is", cell.value, "and it's BOLD.")
 
 # #Finding Hours
 # for sheet in worksheets[:-1]:
