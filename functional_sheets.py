@@ -21,36 +21,6 @@ header.extend(['Tot. Hours', 'DOE Util %', 'Proj. Util %'])
 print("NEW HEADER IS \n{}".format(header))
 
 
-
-#This function takes in the list of cost centers which make up a Functional Tab, returns a list of lists; 
-#each internal list is a row for that Functional tab
-##I'd originally intended it to return a list of tuples; why the change? Probably lack of skill on my part
-##I could tuple() each temprow BEFORE I append it to tempTable; or learn how to build tuples programmatically
-##The second seems the best option; one or both will have to happen in a later refactor
-###As of 2013-08-01, This function is being cloned into two different functions;One that excludes Company 2231(Subsea)
-###and another that excludes anything NOT Company 2231(Subsea) This is my current (2013-08-01)
-###solution to the issue of Subsea having cost centers used in 2231 and 1902 in a Cost Center-focused report
-
-#def functionTable(list):
-#    
-#    ''' 
-#    list ==> list of lists
-#    
-#    Input a list of cost centers for a functional tab;
-#    return a list of lists where each inner list is a row of representing one person in that Cost Center
-#    '''
-#    
-#    tempTable = []
-#    for row in source.rows:
-#        ri = source.rows.index(row)
-#        if str(row[1].value) in list:
-#            temprow = []
-#            for cell in row:
-#                ci = source.rows[ri].index(cell)
-#                temprow.append(source.rows[ri][ci].value)
-#            tempTable.append(temprow)
-#    return tempTable
-
 ##This function is intended to create a table of the ENTIRE contents of the headcount summary file
 fullTable = []
 time1 = time.time()
@@ -85,16 +55,12 @@ fullTable.append(temprow)
 time2 = time.time()
 print ("fullTable Creation Time was ", time2-time1, "seconds.")
 
-
-#This function takes in the list of cost centers from the various functional areas, returns a list of lists; 
-#each internal list is a row in the table for that area. It also excludes any rows that ARE
-#Subsea (Company 2231)
 def makeNoSubseaTable(list):
     
     ''' 
     list ==> list of lists
     
-    Input a list of cost centers for a functional tab;
+    Input a list of cost centers which make up a Functional Tab;
     return a list of lists where each inner list is a row of representing one person in that Cost Center
     '''
 
