@@ -7,16 +7,15 @@ from pprint import pprint
 from openpyxl import load_workbook
 from openpyxl.workbook import Workbook
 
-start = time.time() #timer, until I learn to use http://docs.python.org/2/library/profile.html
+start = time.time()
 wb = load_workbook('headcount_summary.xlsx')
 source = wb.get_sheet_by_name('monthly_headcount_summary')
 
-
 #creating the header row
 header =[] 
-for c in next(source.rows): # In Py3, this is a generator object. I had to use the next() function on it.
-    header.append(c.value)
-
+# In Py3, source.rows returns a generator object. I had to use the next() function on it.
+for cell in next(source.rows): 
+    header.append(cell.value)
 header.extend(['Tot. Hours', 'DOE Util %', 'Proj. Util %'])
 
 ## This "function" is intended to create a table of the ENTIRE contents of the headcount summary file
@@ -26,11 +25,9 @@ time1 = time.time()
 
 
 # using next on the generator object. Not sure if I'll need to cut off the last row
-for index, row in enumerate(source.rows):
+for row in source.rows:
     temprow = []
     for cell in row:
-        ci = row.index(cell)
-        #print source.rows[ri][ci].value
         temprow.append(cell.value)
         #print temprow #only for debugging purposes; I want to see when/where the float division by zero problem is happening
         #It seems to be in the "hdcntsum.xlsx" header row, where the DOE & Project columns have '0' in them.
@@ -58,27 +55,25 @@ def functionTable(list):
     '''
 
     tempTable = []
-    for index, row in enumerate(source.rows):
-        # print("ROW IS OF TYPE \n{} AND CONTAINS \n{}".format(type(row), row))
-        # for cell in row:
-            # print (cell.value)
-        ri = index
-        if str(row[1].value) in list: #row[1] is the position of the Cost Center; I should change that to get the index of the name
+    for row in source.rows:
+        # row[1] is the position of the Cost Center
+        if str(row[1].value) in list:
             temprow = []
             for cell in row:
-                ci = row.index(cell)
-                # print ("row {}, cell {} has the value of {}".format(ri, ci, row[ci].value))
-                temprow.append(row[ci].value)
-            temprow.append(temprow[-1]+temprow[-2]) #Total Hours: sum of DOE & Proj Hours
-            temprow.append(temprow[-3]/float(temprow[-1])) #DOE Util%; DOE Hours / newly added Total
-            temprow.append(temprow[-3]/float(temprow[-2])) #Proj Util%; Proj. Hours / Total
+                temprow.append(cell.value)
+            #Total Hours: sum of DOE & Proj Hours
+            temprow.append(temprow[-1]+temprow[-2])
+            #DOE Util%; DOE Hours / newly added Total
+            temprow.append(temprow[-3]/float(temprow[-1]))
+            #Proj Util%; Proj. Hours / Total 
+            temprow.append(temprow[-3]/float(temprow[-2]))
             tempTable.append(temprow)
     return tempTable
     
     
 ##Creating the target workbook
 target = Workbook()
-dest_filename = r'hdcntfunc.xlsx'
+dest_filename = r'headcount_by_function.xlsx'
 
 ##Function that creates the individual functional area worksheets IN the workbook just created
 def create_tabs(functable, tabname):
@@ -86,7 +81,7 @@ def create_tabs(functable, tabname):
     list of lists, string --> list of lists
     
     Takes in nested list for each functional area (created by functionTable) and a string (tabname)
-    each inner list reperesents a row of data; creates a spreadsheet in memory, writes those rows to the spreadsheet
+    each inner list represents a row of data; creates a worksheet in memory, writes those rows to the worksheet
     The string becomes the name of the worksheet
     '''
     #creating & naming the spreadsheet in memory
@@ -172,7 +167,6 @@ print ("Creation Time  for all Functional Tables was ", time2-time1, "seconds.")
 ##Function 2: create_tabs
 time1 = time.time()
 for key in sorted(sheet_dict.keys(), reverse = True):
-    # print("SHEET_DICT[KEY] \n{}, KEY \n{}".format(sheet_dict[key], key))
     create_tabs(sheet_dict[key], key)
 create_tabs(fullTable, 'Headcount Summary Sorted')
 time2 = time.time()
