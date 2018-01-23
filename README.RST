@@ -10,20 +10,21 @@ I first presented *this* version of the talk at the PyHouston meetup on 20112-12
 
 I don't know exactly what "Canadaianizing" means, as I just made that word up AS I TYPED IT in the prior sentence. I apologize for any confusion. Just know that I'm confused too. 😮 😁
 
-As of 2017-12-21, the ``basic`` branch is the one that works. Focus on the Key Files below. While they are still a bit of a hot mess, the other files are a HOTTER mess. So, there's that. But, the key files function.
+As of 2018-02-23, the ``master`` branch is the one that works. Focus on the Key Files below. While they are still a bit of a hot mess, the other files are a HOTTER mess. So, there's that. But, the key files function.
 
 Key Files
 ==========
 -  ``headcount_summary.xlsx``: The primary input file
 -  ``functional_sheets.py``: The primary code file. It transforms the primary input into the primary output.
--  ``hdcntfunc.xlsx``: The primary output file.
+-  ``headcount_by_function.xlsx``: The primary output file.
 -  ``costCenter_Function_map.json``: The mapping of cost centers to Functional Groups they're part of.
+-  ``pycascades_2018.key``: the slides from PyCascades 2018
 
 Note that a BUNCH of these names are TERRIBLE (they're from 2013, sorry) and I'll probably change them. They NEED changing.
 
 Running
 ========
-1. Create a virtual environment with the tool of you choice. I use `virtualenvwrapper <http://virtualenvwrapper.readthedocs.io/en/latest/>`_, but there are other tools.
+1. Create a virtual environment with the tool of you choice. I use `virtualenvwrapper <http://virtualenvwrapper.readthedocs.io/en/latest/>`_, but there are other tools. I should probably change to `pipenv <https://docs.pipenv.org/>`_, but I haven't figured it out yet.
 	- Virtual environments are a good practice and you should use them all the time. I'll go into that in more detail in another talk at 
 	- If you've got another way to handle dependencies (Docker container, etc), use that.
 	- This is Python 3 code (adapted from old, bad, Python 2 code). I've run this with Python 3.5.1 and 3.6.2
